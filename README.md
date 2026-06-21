@@ -89,3 +89,70 @@ The conf file matches the example above. Running `HttpRequester.exe` (with optio
 - The launcher can be started from any working directory (e.g. `D:\> HttpRequester\HttpRequester.exe`); conf paths are resolved against the executable's directory, and `Py_Main` receives the absolute launcher path as `argv[0]`.
 - `python3.dll` is loaded by full path from the configured working directory.
 - Build platform (x86/x64) must match the embedded Python runtime.
+
+## Linux Launcher (`Linux/python-caller`)
+
+A Linux counterpart that reads `python-caller.conf`, loads `libpython3.12.so` via `dlopen`, and calls `Py_BytesMain` to run an embedded Python application.
+
+### Building (WSL / Linux)
+
+```bash
+cd Linux
+make
+cp python-caller.conf.example python-caller.conf   # edit paths for your layout
+./python-caller
+```
+
+Requires `gcc` and `libdl`. No Python development headers needed at build time.
+
+### `python-caller.conf` Format
+
+Same two-line format as the Windows launcher. Place `python-caller.conf` next to the `python-caller` binary:
+
+| Line | Description |
+|------|-------------|
+| 1 | Working directory, relative to the **executable's directory** (where `libpython3.12.so` lives) |
+| 2 | Entry script path, relative to that working directory (absolute paths also work) |
+
+Example `python-caller.conf` for local development:
+
+```
+lib
+python3.12/your_app/main.pyc
+```
+
+When line 1 ends with `/lib`, `PYTHONHOME` is set to its parent directory automatically.
+
+### Notes (Linux)
+
+- Uses `Py_BytesMain` instead of `Py_Main` — the embeddable `libpython3.12.so` loaded through `dlopen` works reliably with `Py_BytesMain` + `Py_SetPythonHome` / `Py_SetProgramName`.
+- `argv[0]` passed to Python is the launcher's absolute path from `/proc/self/exe`, not the shell's relative path.
+- Forward user arguments after the script path, same as the Windows launcher.
+- The launcher can be started from any working directory; conf paths are resolved against the executable's directory.
+- Build platform must match the embedded Python runtime (e.g. x86_64 `libpython3.12.so`).
+
+### Real-World Example: HTTP Requester (Linux)
+
+The Linux portable release of [HTTP Requester](https://github.com/yinkaisheng/http-requester) is packaged with `python-caller` (renamed to `httpreq`). A typical install directory:
+
+```
+httpreq/
+├── httpreq                     # python-caller, renamed
+├── httpreq.conf                  → lib + python3.12/httpreq/main.pyc
+├── lib/                          # Python 3.12 embeddable runtime
+│   ├── libpython3.12.so
+│   ├── python312.zip
+│   └── python3.12/
+│       └── httpreq/main.pyc
+├── config/                       # Session, history, and settings
+└── logs/
+```
+
+Example `httpreq.conf`:
+
+```
+lib
+python3.12/httpreq/main.pyc
+```
+
+This sets the working directory to `<exe_dir>/lib` and runs the HTTP Requester entry script. No system Python or `pip` install is required—extract and run `./httpreq` (or `nohup ./httpreq &` to keep it running after closing the terminal).

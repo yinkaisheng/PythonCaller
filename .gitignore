@@ -35,3 +35,8 @@ ipch/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Linux build
+Linux/python-caller
+Linux/python-caller.conf
+Linux/test_*
