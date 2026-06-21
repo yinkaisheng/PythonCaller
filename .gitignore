@@ -1,0 +1,37 @@
+# Build outputs (see PythonCaller.vcxproj OutDir / IntDir)
+lib_win_*/
+temp_obj/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+
+# MSBuild / compiler
+*.obj
+*.iobj
+*.ipdb
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.idb
+*.tlog
+*.lastbuildstate
+*.recipe
+*.res
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
